@@ -1,4 +1,4 @@
-#%%
+# %%
 import argparse
 from sys import platform
 
@@ -6,13 +6,16 @@ from utils.models import *  # set ONNX_EXPORT in models.py
 from utils.datasets import *
 from utils.utils import *
 
-#%%
+
+# %%
 def detectTable(opt):
     with torch.no_grad():
-        img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
+        print("detectTable img_size", opt.img_size)
+        img_size = (
+            416, 256) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
         out, source, weights, half, view_img, save_txt = opt.output, opt.source, opt.weights, opt.half, opt.view_img, opt.save_txt
-        #webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
-        webcam=False
+        # webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
+        webcam = False
 
         # Initialize
         device = torch_utils.select_device(device='cpu' if ONNX_EXPORT else opt.device)
@@ -79,7 +82,7 @@ def detectTable(opt):
 
         # Run inference
         t0 = time.time()
-        results=""
+        results = ""
         for path, img, im0s, vid_cap in dataset:
             t = time.time()
             img = torch.from_numpy(img).to(device)
@@ -92,7 +95,8 @@ def detectTable(opt):
             pred = model(img)[0].float() if half else model(img)[0]
 
             # Apply NMS
-            pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+            pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes,
+                                       agnostic=opt.agnostic_nms)
 
             # Apply Classifier
             if classify:
@@ -121,28 +125,28 @@ def detectTable(opt):
                         if save_txt:  # Write to file
                             # with open(save_path + '.txt', 'a') as file:
                             #     file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
-                            results+=('%g ' * 6 + '\n') % (*xyxy, cls, conf)
+                            results += ('%g ' * 6 + '\n') % (*xyxy, cls, conf)
                         if save_img or view_img:  # Add bbox to image
                             label = '%s %.2f' % (names[int(cls)], conf)
                             plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
         return results
 
-#%%
+
+# %%
 class parameters:
     def __init__(self, img):
-        self.cfg="utils/yolov3-tiny_table.cfg"
-        self.names="utils/table.names"
-        self.weights="utils/best_v2.weights"
-        self.source=img
-        self.output="outputs/"
-        self.img_size=416
-        self.conf_thres=0.2
-        self.iou_thres=0.6
-        self.fourcc='mp4v'
-        self.half=False
-        self.device="cpu"
-        self.view_img=False
-        self.save_txt=True
-        self.classes=None
-        self.agnostic_nms=False
-
+        self.cfg = "utils/yolov3-tiny_table.cfg"
+        self.names = "utils/table.names"
+        self.weights = "utils/best_v2.weights"
+        self.source = img
+        self.output = "outputs/"
+        self.img_size = 416
+        self.conf_thres = 0.2
+        self.iou_thres = 0.6
+        self.fourcc = 'mp4v'
+        self.half = False
+        self.device = "cpu"
+        self.view_img = False
+        self.save_txt = True
+        self.classes = None
+        self.agnostic_nms = False
