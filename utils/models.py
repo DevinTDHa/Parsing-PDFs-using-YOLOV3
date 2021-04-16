@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from utils.parse_config import *
 from utils.utils import *
 
-ONNX_EXPORT = False
+ONNX_EXPORT = True
 
 
 def create_modules(module_defs, img_size, arc):
@@ -195,12 +195,13 @@ class YOLOLayer(nn.Module):
             create_grids(self, img_size, (nx, ny))
 
     def forward(self, p, img_size, var=None):
-        if ONNX_EXPORT:
-            bs = 1  # batch size
-        else:
-            bs, _, ny, nx = p.shape  # bs, 255, 13, 13
-            if (self.nx, self.ny) != (nx, ny):
-                create_grids(self, img_size, (nx, ny), p.device, p.dtype)
+        # if ONNX_EXPORT:
+        #     bs = 1  # batch size
+        # else:
+        bs, _, ny, nx = p.shape  # bs, 255, 13, 13
+        # if (self.nx, self.ny) != (nx, ny):
+        print("creating grids")
+        create_grids(self, img_size, (nx, ny), p.device, p.dtype)
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
         p = p.view(bs, self.na, self.no, self.ny, self.nx).permute(0, 1, 3, 4, 2).contiguous()  # prediction

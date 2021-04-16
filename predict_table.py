@@ -11,7 +11,7 @@ import matplotlib.image as mpimg
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from pdf2image import convert_from_path, convert_from_bytes
 from utils.detect_func import detectTable, parameters
-
+from utils.models import ONNX_EXPORT
 import argparse
 
 
@@ -96,6 +96,8 @@ def detect_tables(opt):
 
     opt = parameters(img_path)
     output_detect = detectTable(opt)
+    if ONNX_EXPORT:
+        return
     output = outpout_yolo(output_detect)
 
     os.remove(img_path)

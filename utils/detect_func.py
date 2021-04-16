@@ -49,15 +49,20 @@ def detectTable(opt):
 
         # Export mode
         if ONNX_EXPORT:
+            import onnx
             model.fuse()
             img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
+            y = model(img)  # dry run
             f = opt.weights.replace(opt.weights.split('.')[-1], 'onnx')  # *.onnx filename
-            torch.onnx.export(model, img, f, verbose=False, opset_version=11,
-                              dynamic_axes={'input': {0: 'batch_size'},  # variable lenght axes
-                                            'output': {0: 'batch_size'}})
+            print('\nStarting ONNX export with onnx %s...' % onnx.__version__)
+            torch.onnx.export(model, img, f, verbose=False, opset_version=12, input_names=['images'],
+                              output_names=['classes', 'boxes'] if y is None else ['output'],
+                              dynamic_axes={'images': {0: 'batch', 2: 'height', 3: 'width'},
+                                            'output': {0: 'batch', 2: 'y', 3: 'x'}
+                                            }
+                              )
 
             # Validate exported model
-            import onnx
             model = onnx.load(f)  # Load the ONNX model
             onnx.checker.check_model(model)  # Check that the IR is well formed
             print(onnx.helper.printable_graph(model.graph))  # Print a human readable representation of the graph
