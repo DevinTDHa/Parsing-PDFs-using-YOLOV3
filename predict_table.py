@@ -106,7 +106,7 @@ def detect_tables(opt):
             [[x1_img, y1_img, x2_img, y2_img], [w_table, h_table], [H_img, W_img]] = img_dim(img, out)
             plt.plot([x1_img, x2_img, x2_img, x1_img, x1_img], [y1_img, y1_img, y2_img, y2_img, y1_img], linestyle='-.',
                      alpha=0.7)
-            # plt.scatter([x1_img, x2_img], [y1_img, y2_img])
+            plt.scatter([x1_img, x2_img], [y1_img, y2_img])
         imgplot = plt.imshow(img)
         plt.savefig(pdf_file[:-4] + "-" + str(pg) + ".png")
 

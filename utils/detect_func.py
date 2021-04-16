@@ -12,7 +12,7 @@ def detectTable(opt):
     with torch.no_grad():
         print("detectTable img_size", opt.img_size)
         img_size = (
-            416, 256) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
+            416, 352) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
         out, source, weights, half, view_img, save_txt = opt.output, opt.source, opt.weights, opt.half, opt.view_img, opt.save_txt
         # webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
         webcam = False
@@ -52,7 +52,9 @@ def detectTable(opt):
             model.fuse()
             img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
             f = opt.weights.replace(opt.weights.split('.')[-1], 'onnx')  # *.onnx filename
-            torch.onnx.export(model, img, f, verbose=False, opset_version=11)
+            torch.onnx.export(model, img, f, verbose=False, opset_version=11,
+                              dynamic_axes={'input': {0: 'batch_size'},  # variable lenght axes
+                                            'output': {0: 'batch_size'}})
 
             # Validate exported model
             import onnx
