@@ -188,11 +188,11 @@ class YOLOLayer(nn.Module):
         self.ny = 0  # initialize number of y gridpoints
         self.arc = arc
 
-        if ONNX_EXPORT:  # grids must be computed in __init__
-            stride = [32, 16, 8][yolo_index]  # stride of this layer
-            nx = int(img_size[1] / stride)  # number x grid points
-            ny = int(img_size[0] / stride)  # number y grid points
-            create_grids(self, img_size, (nx, ny))
+        # if ONNX_EXPORT:  # grids must be computed in __init__
+        #     stride = [32, 16, 8][yolo_index]  # stride of this layer
+        #     nx = int(img_size[1] / stride)  # number x grid points
+        #     ny = int(img_size[0] / stride)  # number y grid points
+        #     create_grids(self, img_size, (nx, ny))
 
     def forward(self, p, img_size, var=None):
         # if ONNX_EXPORT:
@@ -303,9 +303,9 @@ class Darknet(nn.Module):
 
         if self.training:  # train
             return yolo_out
-        elif ONNX_EXPORT:  # export
-            x = [torch.cat(x, 0) for x in zip(*yolo_out)]
-            return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
+        # elif ONNX_EXPORT:  # export
+        #     x = [torch.cat(x, 0) for x in zip(*yolo_out)]
+        #     return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
         else:  # test
             io, p = zip(*yolo_out)  # inference output, training output
             return torch.cat(io, 1), p
