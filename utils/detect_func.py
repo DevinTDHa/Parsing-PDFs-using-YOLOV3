@@ -6,6 +6,7 @@ from utils.models import *  # set ONNX_EXPORT in models.py
 from utils.datasets import *
 from utils.utils import *
 
+OVERRIDE_EXPORT = False
 
 # %%
 def detectTable(opt):
@@ -48,10 +49,11 @@ def detectTable(opt):
         model.to(device).eval()
 
         # Export mode
-        if ONNX_EXPORT:
+        if ONNX_EXPORT or OVERRIDE_EXPORT:
             import onnx
             model.fuse()
-            img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
+            img_size = (416, 352) if type(img_size) == int else img_size
+            img = torch.zeros(1, 3, *img_size)  # (1, 3, 320, 192)
             y = model(img)  # dry run
             f = opt.weights.replace(opt.weights.split('.')[-1], 'onnx')  # *.onnx filename
             print('\nStarting ONNX export with onnx %s...' % onnx.__version__)

@@ -3,8 +3,7 @@ import torch.nn.functional as F
 from utils.parse_config import *
 from utils.utils import *
 
-ONNX_EXPORT = True
-
+ONNX_EXPORT = False
 
 def create_modules(module_defs, img_size, arc):
     # Constructs module list of layer blocks from module configuration in module_defs
@@ -200,7 +199,6 @@ class YOLOLayer(nn.Module):
         # else:
         bs, _, ny, nx = p.shape  # bs, 255, 13, 13
         # if (self.nx, self.ny) != (nx, ny):
-        print("creating grids")
         create_grids(self, img_size, (nx, ny), p.device, p.dtype)
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
@@ -264,7 +262,7 @@ class Darknet(nn.Module):
     def forward(self, x, var=None):
         img_size = x.shape[-2:]
         yolo_out, out = [], []
-        verbose = False
+        verbose = True
         if verbose:
             str = ''
             print('0', x.shape)
@@ -301,11 +299,19 @@ class Darknet(nn.Module):
                 print('%g/%g %s -' % (i, len(self.module_list), mtype), list(x.shape), str)
                 str = ''
 
+        print("yolo_out: ")
+        for out in yolo_out:
+            if type(out) == tuple:
+                for o in out:
+                    print(o.shape)
+            else:
+                print(out.shape)
+
         if self.training:  # train
             return yolo_out
-        # elif ONNX_EXPORT:  # export
-        #     x = [torch.cat(x, 0) for x in zip(*yolo_out)]
-        #     return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
+        elif ONNX_EXPORT:  # export
+            x = [torch.cat(x, 0) for x in zip(*yolo_out)]
+            return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
         else:  # test
             io, p = zip(*yolo_out)  # inference output, training output
             return torch.cat(io, 1), p

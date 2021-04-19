@@ -133,7 +133,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--pdf_path", type=str, default="pdfs/boeing.pdf", help="PDF path located in pdfs folder")
     parser.add_argument("--page", type=int, default=2, help="Page to parse")
+    parser.add_argument("--export", type=bool, default=False, help="Export to ONNX")
+
     opt = parser.parse_args()
+    global ONNX_EXPORT
+    ONNX_EXPORT = opt.export
+
     detect_tables(opt)
 
 # %%
